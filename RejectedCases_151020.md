@@ -46,4 +46,6 @@ BsLuong151020/1.2.840.113619.2.278.3.717616.323.1577925307.508/labels.xml\
 BsLuong151020/1.3.12.2.1107.5.1.7.112561.30000020030407390865400001196/labels.xml\
 BsChi_071020/1.2.840.113619.2.278.3.717616.204.1584947868.534/labels.xml
 # Error 6: Ca đã duyệt/đọc nhưng chưa được gán nhãn 3D, bác sĩ đánh nhầm sang nhãn 2D 
+Không có.
 # Error 7: Bác sĩ gán nhãn 3D, nhưng chỉ có chặn đầu (hoặc chặn cuối) 
+Không có.
