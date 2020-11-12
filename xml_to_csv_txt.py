@@ -4,7 +4,19 @@ import pandas as pd
 from tqdm import tqdm
 import glob
 
+LOCAL_CSV = "liver_ct_full_export_271020.csv"
+GLOBAL_CSV = "liver_ct_global_export_271020.csv"
+
 def parse_xml(label_file):
+    """
+    Function to parse xml file. Input xml file path, output:
+    df: dataframe of local annotation points
+    global_labels: global labels in this xml
+    studyID: StudyInstanceUID from dicom
+    seriesID: SeriesInstanceUID from dicom
+    patientpid: PatientPID on label-pacs system
+    session_id: Name of annotated doctor
+    """
     label_file = label_file
     study_id = label_file.split('/')[-2]
     # Loading label file
@@ -56,10 +68,6 @@ def parse_xml(label_file):
         for key in data.keys():
             point = label.find('point')
             for j, value in enumerate(point.iter('value')):
-                x = float(value.attrib['x'])
-                y = float(value.attrib['y'])
-                z = float(value.attrib['z'])
-                
                 if key == 'name':
                     tag = label.find('tags')
                     label_name = ''
@@ -84,12 +92,13 @@ def parse_xml(label_file):
     return df, global_labels, studyID, seriesID, patientpid, session_id
 
 # get list of xml files
+# can input many folders at once
 xml_folders = [
-    "271020",
+    "xmls/271020",
 ]
 xml_list = []
 for f in xml_folders:
-    xml_list += glob.glob(f"xmls/{f}/*/*.xml")
+    xml_list += glob.glob(f"{f}/*/*.xml")
 
 # get list of global labels
 DISEASE = {
@@ -186,9 +195,10 @@ with open("inadherent.txt", 'w') as f:
             if len(study_df[study_df["annotation"].isin(['Rectangle'])]):
                 f.writelines(session_id + ' ' * (10-len(session_id)) + '| ' + xml.split('/')[2] + ' ' * (60 - len(xml.split('/')[2])) + '| ' + patientpid + '\n')
 
+# remove xmls that are not adhere to labelling rules before generate csv file
 xml_list = [x for x in xml_list if x not in list(set(rejected_xml))]
 
-# generate global csv
+# generate local csv
 df = pd.DataFrame()
 for xml in tqdm(xml_list):
     sub_data = []
@@ -196,9 +206,9 @@ for xml in tqdm(xml_list):
     df = pd.concat([df, study_df])
 df = df[df["type"] == "local"]
 df = df[df["annotation"] == "20"]
-df.to_csv("liver_ct_full_export_271020.csv", index=False)
+df.to_csv(LOCAL_CSV, index=False)
 
-# generate local csv
+# generate global csv
 data = []
 for xml in tqdm(xml_list):
     sub_data = []
@@ -217,7 +227,6 @@ for xml in tqdm(xml_list):
         sub_data[DISEASE[lb]+2] = 1
     if not sub_data[DISEASE["Invalid (Không hợp lệ)"]+2]:
         if not (sub_data[DISEASE["Other"]+2] and np.sum(sub_data[2:]) == 1 and not seriesID):
-            data.append(sub_data)
-    
+            data.append(sub_data)    
 df = pd.DataFrame(data=data, columns=['StudyID', 'SeriesID'] + list(DISEASE.keys()))
-df.to_csv("liver_ct_global_export_271020.csv", index=False)
+df.to_csv(GLOBAL_CSV, index=False)
