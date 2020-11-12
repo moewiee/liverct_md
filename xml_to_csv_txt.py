@@ -4,6 +4,12 @@ import pandas as pd
 from tqdm import tqdm
 import glob
 
+# input dirs contain studies
+XML_DIRS = [
+    "xmls/271020",
+]
+
+# output csv files
 LOCAL_CSV = "liver_ct_full_export_271020.csv"
 GLOBAL_CSV = "liver_ct_global_export_271020.csv"
 
@@ -92,10 +98,6 @@ def parse_xml(label_file):
     return df, global_labels, studyID, seriesID, patientpid, session_id
 
 # get list of xml files
-# can input many folders at once
-xml_folders = [
-    "xmls/271020",
-]
 xml_list = []
 for f in xml_folders:
     xml_list += glob.glob(f"{f}/*/*.xml")
